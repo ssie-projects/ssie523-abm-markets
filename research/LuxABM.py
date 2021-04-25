@@ -194,26 +194,82 @@ class LuxABMSim:
         nx = (self.No - self.Np) / self.Nc
         self.x = nx
 
+def param_constraint(self, nu, dt, N):
+        # Returns true if parameters violate model constraint.    
+        return 0.5 * nu * dt * N > 1
+    
+def calculate_log_returns(data):
+    """Calculates log returns.
+
+    Args:
+        data (list): list of price data.
+    """
+    log_returns = np.diff(np.log(data))
+    
+    return log_returns
+
+def set_params(pct_Nf, Tf, Tc, p, pf, mu, b, nu):
+    params = dict()
+    params["pcf_Nf"] = pct_Nf
+    params["Tf"] = Tf
+    params["Tc"] = Tc
+    params["p"] = p
+    params["pf"] = pf
+    params["mu"] = mu
+    params["b"] = b
+    params["nu"] = nu
+    return params
+
 if __name__ == "__main__":
     sim = LuxABMSim(N = 100, T = 20, dt = 1./252)
 
-    sim.initialize(
-        pct_Nf=0.4,
-        Tf=1,
-        Tc=1,
-        p=10.0,
-        pf=10.,
-        mu = 0.08,
-        b = 0.1,
-        nu = 0.8 / dt
-    )
+    # Parameters to tune
+    # pcf_Nf: % of fundamentalist vs. noise traders in the market.
+    # Tf: how many shares of a security a fundamentalist trader agent transacts.
+    # Tc: how many shares of a security a noise trader agent transacts.
+    # b: price adjustment parameter
+    # nu: contagion of noise traders switching from optimist to pessimist
 
-    while sim.t < sim.T:
-        sim.update()
-        sim.observe()
+    # Create a looping functions around
+    # this to change parameters
     
-    print('hi')
+    # list to store tuple of (params, results)
+    trials = []
+    
+    for nu_ in np.arange(0.0001, 0.009, 0.0001):
 
+        params = set_params(
+            pct_Nf = 0.4,
+            Tf = 1, 
+            Tc = 1,
+            p = 10.0,
+            pf = 10.0,
+            mu = 0.08,
+            b = 0.1,
+            nu = nu_ / dt
+        )
+
+        if param_constraint():
+            print("parameters violate constraint")
+            pass
+
+        sim.initialize(
+            pct_Nf=params["pcf_Nf"],
+            Tf=params["Tf"],
+            Tc=params["Tc"],
+            p=params["p"],
+            pf=params["pf"],
+            mu = params["mu"],
+            b = params["b"],
+            nu = params["nu"]
+        )
+
+        while sim.t < sim.T:
+            sim.update()
+            sim.observe()
+    
+        print(calculate_log_returns(sim.vec_price))
+    print("hi")
     # Initialize simulation.
     # Price
     # pf = 10.0 # average price of security
