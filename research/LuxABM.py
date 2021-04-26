@@ -47,7 +47,6 @@ class LuxABMSim:
         self.N = N # total number of traders (fundementalist and noise)
         self.T = T # total elapsed time of simulation
         self.dt = dt # change in time step per increment.
-        self.t = 0 # initial time step
         self.x = None # system state variable: No - Np // Nc
         self.Nc = 0 # number of noise traders
         self.Nf = 0 # number of fundamentalist traders
@@ -77,6 +76,7 @@ class LuxABMSim:
         self.mu = mu
         self.b = b
         self.nu = nu
+        self.t = 0 # initial time step
 
         # Vector objects to store simulated data
         self.vec_price = [self.p]
@@ -194,7 +194,7 @@ class LuxABMSim:
         nx = (self.No - self.Np) / self.Nc
         self.x = nx
 
-def param_constraint(self, nu, dt, N):
+def param_constraint(nu, dt, N):
         # Returns true if parameters violate model constraint.    
         return 0.5 * nu * dt * N > 1
     
@@ -246,12 +246,12 @@ if __name__ == "__main__":
             pf = 10.0,
             mu = 0.08,
             b = 0.1,
-            nu = nu_ / dt
+            nu = nu_/ dt
         )
 
-        if param_constraint():
+        if param_constraint(params["nu"], sim.dt, sim.N):
             print("parameters violate constraint")
-            pass
+            continue
 
         sim.initialize(
             pct_Nf=params["pcf_Nf"],
@@ -269,7 +269,7 @@ if __name__ == "__main__":
             sim.observe()
     
         print(calculate_log_returns(sim.vec_price))
-    print("hi")
+        print("hi")
     # Initialize simulation.
     # Price
     # pf = 10.0 # average price of security
