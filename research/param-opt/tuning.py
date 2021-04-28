@@ -10,6 +10,8 @@ start_time = time.time()
 with open('paramSpace.pkl', 'rb') as f:
     SAMPLE_SPACE = pickle.load(f)
 end_time = time.time()
+
+sys.stdout = open('candidates.txt','a+')
 print('Elapsed Time to Load .pkl: {:.3f} min'.format((end_time-start_time)/60))
 
 # Simulation variables
@@ -280,7 +282,7 @@ sim = LuxABMSim(N = 100, T = 20, dt = 1./252)
 trials = []
 
 dt = 1./252
-for i, each in enumerate(SAMPLE_SPACE[:50001]):
+for i, each in enumerate(SAMPLE_SPACE[50000: 125001]):
     
     params = set_params(
     pct_Nf = 0.4,
@@ -334,4 +336,5 @@ for i, each in enumerate(SAMPLE_SPACE[:50001]):
 with open('resultsSpace.pkl', 'wb') as f:
     pickle.dump(trials, f)
 
+sys.stdout = open('candidates.txt','a+')
 print('Done // {}'.format(datetime.datetime.now()))
